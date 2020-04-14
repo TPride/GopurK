@@ -31,8 +31,8 @@ class Utils {
         @Throws(IOException::class)
         private fun readFile(reader: Reader): String? {
             BufferedReader(reader).use { br ->
-                var temp: String?
                 val stringBuilder = StringBuilder()
+                var temp: String?
                 temp = br.readLine()
                 while (temp != null) {
                     if (stringBuilder.isNotEmpty())
@@ -71,9 +71,7 @@ class Utils {
 class Config {
     companion object {
         val YAML: Int = 0
-
         val format: MutableMap<String, Int> = TreeMap<String, Int>()
-
         init {
             format.put("yaml", YAML)
             format.put("yml", YAML)
@@ -201,6 +199,11 @@ class Config {
     fun isBoolean(key: String): Boolean = config.isBoolean(key)
     fun isList(key: String): Boolean = config.isList(key)
 
+    fun exists(key: String?): Boolean = if (key == null) false else config.exists(key)
+    fun exists(key: String?, ignoreCase: Boolean): Boolean = if (key == null) false else config.exists(key, ignoreCase)
+
+    fun remove(key: String?): Unit = config.remove(key)
+
     /**
      *
      * Set
@@ -222,8 +225,10 @@ class Config {
      */
     fun get(key: String?): Any? = get<Any?>(key, null)
     fun <T> get(key: String?, defaultValue: T): T? = if (correct) config.get(key, defaultValue) else defaultValue
-    fun getSection(key: String): ConfigSection = if (correct) config.getSection(key) else ConfigSection()
 
+    fun getAll(): MutableMap<String, Any?> = config.getAllMap()
+
+    fun getSection(key: String): ConfigSection = if (correct) config.getSection(key) else ConfigSection()
     fun getSections(key: String): ConfigSection = if (correct) config.getSections(key) else ConfigSection()
     fun getSections(): ConfigSection = if (correct) config.getSections() else ConfigSection()
 
@@ -577,6 +582,12 @@ class ConfigSection : LinkedHashMap<String, Any?> {
         for (o in list)
             result.add(o)
         return result
+    }
+
+    fun getAllMap(): MutableMap<String, Any?> {
+        val map = java.util.LinkedHashMap<String, Any?>()
+        map.putAll(this)
+        return map
     }
 
     fun exists(key: String): Boolean = exists(key, false)

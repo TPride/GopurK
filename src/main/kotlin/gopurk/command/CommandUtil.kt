@@ -1,6 +1,8 @@
 package gopurk.command
 
-class CommandLine(val commandLine: String?) {
+import java.lang.StringBuilder
+
+class CommandLine(private var commandLine: String) {
     companion object {
         fun filterCommandToname(commandLine: String?): String? {
             if (commandLine == null || commandLine.isEmpty())
@@ -24,4 +26,23 @@ class CommandLine(val commandLine: String?) {
     fun getName(): String? = filterCommandToname(commandLine)
 
     fun getArgs(): List<String> = filterCommandToargs(commandLine)
+
+    fun getCommandLine(): String = commandLine
+
+    fun parseCommandLine(): String = toString()
+
+    fun toCommandLine(): CommandLine = CommandLine(parseCommandLine())
+
+    override fun toString(): String {
+        val name = getName() ?: return ""
+        val s: StringBuilder = StringBuilder()
+        s.append(name)
+        val args: List<String> = getArgs()
+        for (ss in args.indices) {
+            s.append(args[ss])
+            if (ss + 1 < args.size)
+                s.append(" ")
+        }
+        return s.toString()
+    }
 }
