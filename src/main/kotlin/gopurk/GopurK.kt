@@ -11,7 +11,9 @@ class GopurK {
 
     class Information {
         val version: String = "0.0.1"
-        val authors: Array<String> = arrayOf("TPride")
+        val authors: Array<String> = arrayOf(
+            "TPride"
+        )
         val path: String = System.getProperty("user.dir")
     }
 }

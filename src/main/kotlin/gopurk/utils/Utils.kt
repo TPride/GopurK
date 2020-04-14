@@ -103,8 +103,10 @@ class Config {
         load(file, type, ConfigSection(defaultMap))
     }
 
-    fun load(inputStream: InputStream?): Boolean {
-        if (inputStream == null) return false
+    /**
+     * Load File
+     */
+    fun load(inputStream: InputStream): Boolean {
         if (correct) {
             val content: String?
             content = try {
@@ -112,13 +114,12 @@ class Config {
             } catch (e: IOException) {
                 return false
             }
-            this.parseContent(content)
+            parseContent(content)
         }
         return correct
     }
-
-    fun load(file: String): Boolean = this.load(file, YAML)
-    fun load(file: String, type: Int): Boolean = this.load(file, type, ConfigSection())
+    fun load(file: String): Boolean = load(file, YAML)
+    fun load(file: String, type: Int): Boolean = load(file, type, ConfigSection())
     fun load(file: String, type: Int, defaultMap: ConfigSection): Boolean {
         this.correct = true
         this.type = type
@@ -140,10 +141,10 @@ class Config {
                 } catch (e: IOException) {
                     //nocode
                 }
-                this.parseContent(content)
-                if (!this.correct)
+                parseContent(content)
+                if (!correct)
                     return false
-                if (this.setDefault(defaultMap) > 0)
+                if (setDefault(defaultMap) > 0)
                     save()
             } else
                 return false
@@ -157,6 +158,9 @@ class Config {
         load(file.toString(), type)
     }
 
+    /**
+     * Save File
+     */
     fun save(): Boolean {
         return if (correct) {
             var content: String? = ""
@@ -178,15 +182,81 @@ class Config {
             false
     }
 
-    fun setDefault(map: java.util.LinkedHashMap<String, Any?>): Int {
-        return setDefault(ConfigSection(map))
-    }
-
+    fun setDefault(map: java.util.LinkedHashMap<String, Any?>): Int = setDefault(ConfigSection(map))
     fun setDefault(map: ConfigSection): Int {
         val size: Int = config.size
         config = fillDefaults(map, config)
         return config.size - size
     }
+
+    fun isCorrect(): Boolean = correct
+    fun check(): Boolean = correct
+
+    fun isSection(key: String): Boolean = config.isSection(key)
+    fun isInt(key: String): Boolean = config.isInt(key)
+    fun isLong(key: String): Boolean = config.isLong(key)
+    fun isDouble(key: String): Boolean = config.isDouble(key)
+    fun isShort(key: String): Boolean = config.isShort(key)
+    fun isString(key: String): Boolean = config.isString(key)
+    fun isBoolean(key: String): Boolean = config.isBoolean(key)
+    fun isList(key: String): Boolean = config.isList(key)
+
+    /**
+     *
+     * Set
+     *
+     */
+    fun set(key: String, value: Any?): Unit = config.set(key, value)
+
+    fun setAll(map: java.util.LinkedHashMap<String, Any?>): Unit {
+        config = ConfigSection(map)
+    }
+    fun setAll(section: ConfigSection):Unit {
+        config = section
+    }
+
+    /**
+     *
+     * Get
+     *
+     */
+    fun get(key: String?): Any? = get<Any?>(key, null)
+    fun <T> get(key: String?, defaultValue: T): T? = if (correct) config.get(key, defaultValue) else defaultValue
+    fun getSection(key: String): ConfigSection = if (correct) config.getSection(key) else ConfigSection()
+
+    fun getSections(key: String): ConfigSection = if (correct) config.getSections(key) else ConfigSection()
+    fun getSections(): ConfigSection = if (correct) config.getSections() else ConfigSection()
+
+    fun getInt(key: String): Int = getInt(key, 0)
+    fun getInt(key: String, defaultValue: Int): Int = if (correct) config.getInt(key, defaultValue) else defaultValue
+
+    fun getLong(key: String): Long = getLong(key, 0)
+    fun getLong(key: String, defaultValue: Long): Long = if (correct) config.getLong(key, defaultValue) else defaultValue
+
+    fun getDouble(key: String): Double = getDouble(key, 0.0)
+    fun getDouble(key: String, defaultValue: Double): Double = if (correct) config.getDouble(key, defaultValue) else defaultValue
+
+    fun getShort(key: String): Short = getShort(key, 0)
+    fun getShort(key: String, defaultValue: Short): Short = if (correct) config.getShort(key, defaultValue) else defaultValue
+
+    fun getString(key: String): String? = getString(key, "")
+    fun getString(key: String, defaultValue: String): String? = if (correct) config.getString(key, defaultValue) else defaultValue
+
+    fun getBoolean(key: String): Boolean = getBoolean(key, false)
+    fun getBoolean(key: String, defaultValue: Boolean): Boolean = if (correct) config.getBoolean(key, defaultValue) else defaultValue
+
+    fun getList(key: String): List<*>? = this.getList(key, null)
+    fun getList(key: String, defaultList: List<*>?): List<*>? = if (correct) config.getList(key, defaultList) else defaultList
+    fun getStringList(key: String): List<String> = config.getStringList(key)
+    fun getIntegerList(key: String): List<Int> = config.getIntegerList(key)
+    fun getBooleanList(key: String): List<Boolean> = config.getBooleanList(key)
+    fun getDoubleList(key: String): List<Double> = config.getDoubleList(key)
+    fun getFloatList(key: String): List<Float> = config.getFloatList(key)
+    fun getLongList(key: String): List<Long> = config.getLongList(key)
+    fun getShortList(key: String): List<Short> = config.getShortList(key)
+    fun getByteList(key: String): List<Byte> = config.getByteList(key)
+    fun getCharacterList(key: String): List<Char> = config.getCharacterList(key)
+    fun getMapList(key: String): List<Map<*, *>> = config.getMapList(key)
 
     @Suppress("UNCHECKED_CAST")
     private fun parseContent(content: String?) {
@@ -231,24 +301,12 @@ class ConfigSection : LinkedHashMap<String, Any?> {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun parseList(list: List<*>): List<*>? {
-        val newList: MutableList<Any?> = ArrayList()
-        for (o in list) {
-            if (o is LinkedHashMap<*, *>)
-                newList.add(ConfigSection(o as Map<String, Any?>))
-            else
-                newList.add(o)
-        }
-        return newList
-    }
-
     fun <T> get(key: String?, defaultValue: T): T? {
         if (key == null || key.isEmpty())
             return defaultValue
         if (super.containsKey(key))
-            @Suppress("UNCHECKED_CAST")
             return super.get(key) as? T
-        val keys = key.split("\\.", limit = 2).toTypedArray()
+        val keys = key.split("\\.".toRegex()).toTypedArray()
         if (!super.containsKey(keys[0]))
             return defaultValue
         val value = super.get(keys[0])
@@ -258,10 +316,10 @@ class ConfigSection : LinkedHashMap<String, Any?> {
     }
 
     fun set(key: String, value: Any?): Unit {
-        val subKeys = key.split("\\.", limit =  2).toTypedArray()
+        val subKeys = key.split("\\.".toRegex()).toTypedArray()
         if (subKeys.size > 1) {
             var childSection: ConfigSection? = ConfigSection()
-            if (this.containsKey(subKeys[0]) && super.get(subKeys[0]) is ConfigSection)
+            if (containsKey(subKeys[0]) && super.get(subKeys[0]) is ConfigSection)
                 childSection = super.get(subKeys[0]) as ConfigSection?
             childSection!![subKeys[1]] = value
             super.put(subKeys[0], childSection)
@@ -269,69 +327,90 @@ class ConfigSection : LinkedHashMap<String, Any?> {
             super.put(subKeys[0], value)
     }
 
-    fun getAll(): ConfigSection? = ConfigSection(this)
+    fun remove(key: String?) {
+        if (key == null || key.isEmpty())
+            return
+        if (super.containsKey(key))
+            super.remove(key)
+        else if (containsKey(".")) {
+            val keys = key.split("\\.".toRegex()).toTypedArray()
+            if (super.get(keys[0]) is ConfigSection) {
+                val section = super.get(keys[0]) as ConfigSection?
+                section!!.remove(keys[1])
+            }
+        }
+    }
 
-    /*
-     * Int
-     */
-    fun getInt(key: String): Int = this.getInt(key, 0)
-    fun getInt(key: String, defaultValue: Int): Int = this.get(key, defaultValue as Number)!!.toInt()
-    fun isInt(key: String): Boolean = get(key) is Int
-
-    /*
-     *Long
-     */
-    fun getLong(key: String): Long = getLong(key, 0)
-    fun getLong(key: String, defaultValue: Long): Long = this.get(key, defaultValue as Number)!!.toLong()
-    fun isLong(key: String): Boolean = get(key) is Long
-
-    /*
-     * Double
-     */
-    fun getDouble(key: String): Double = getDouble(key, 0.0)
-    fun getDouble(key: String, defaultValue: Double): Double = this.get(key, defaultValue as Number)!!.toDouble()
-    fun isDouble(key: String): Boolean = get(key) is Double
-
-    /*
-     * Short
-     */
-    fun getShort(key: String): Short = getShort(key, 0)
-    fun getShort(key: String, defaultValue: Long): Short = this.get(key, defaultValue as Number)!!.toShort()
-    fun isShort(key: String): Boolean = get(key) is Short
-
-    /*
-     * String
-     */
-    fun getString(key: String): String? = getString(key, "")
-    fun getString(key: String, defaultValue: String): String? = this.get(key, defaultValue).toString()
-    fun isString(key: String): Boolean = get(key) is String
+    fun getAll(): ConfigSection = ConfigSection(this)
 
     /*
      * Section
      */
-    fun getSection(key: String): ConfigSection? = this.get(key, ConfigSection())
-    fun getSections(): ConfigSection? = getSections(null)
-    fun getSections(key: String?): ConfigSection? {
+    fun getSection(key: String): ConfigSection = get(key, ConfigSection())!!
+    fun getSections(): ConfigSection = getSections(null)
+    fun getSections(key: String?): ConfigSection {
         val sections = ConfigSection()
-        val parent = (if (key == null || key.isEmpty()) this.getAll() else getSection(key)) ?: return sections
+        val parent = (if (key == null || key.isEmpty()) getAll() else getSection(key)) ?: return sections
         for (e in parent.entries) {
             if (e.value is ConfigSection)
                 sections.put(e.key, e.value)
         }
         return sections
     }
-    fun isSection(key: String?): Boolean = this[key] is ConfigSection
+    fun isSection(key: String): Boolean = this[key] is ConfigSection
+
+    /*
+     * Int
+     */
+    fun getInt(key: String): Int = getInt(key, 0)
+    fun getInt(key: String, defaultValue: Int): Int = get(key, defaultValue as Number)?.toInt() ?: 0
+    fun isInt(key: String): Boolean = get(key) is Int
+
+    /*
+     *Long
+     */
+    fun getLong(key: String): Long = getLong(key, 0)
+    fun getLong(key: String, defaultValue: Long): Long = get(key, defaultValue as Number)?.toLong() ?: 0
+    fun isLong(key: String): Boolean = get(key) is Long
+
+    /*
+     * Double
+     */
+    fun getDouble(key: String): Double = getDouble(key, 0.0)
+    fun getDouble(key: String, defaultValue: Double): Double = get(key, defaultValue as Number)?.toDouble() ?: 0.0
+    fun isDouble(key: String): Boolean = get(key) is Double
+
+    /*
+     * Short
+     */
+    fun getShort(key: String): Short = getShort(key, 0)
+    fun getShort(key: String, defaultValue: Short): Short = get(key, defaultValue as Number)?.toShort() ?: 0
+    fun isShort(key: String): Boolean = get(key) is Short
+
+    /*
+     * String
+     */
+    fun getString(key: String): String? = getString(key, "")
+    fun getString(key: String, defaultValue: String): String? = get(key, defaultValue)?.toString()
+    fun isString(key: String): Boolean = get(key) is String
+
+    /*
+     * Boolean
+     */
+    fun getBoolean(key: String): Boolean = getBoolean(key, false)
+    fun getBoolean(key: String, defaultValue: Boolean): Boolean = get(key, defaultValue) ?: false
+    fun isBoolean(key: String): Boolean = get(key) is Boolean
 
     /*
      * List
      */
     /** List */
-    fun getList(key: String?): List<*>? = this.getList(key, null)
-    fun getList(key: String?, defaultList: List<*>?): List<*>? = this.get(key, defaultList)
-    fun isList(key: String?): Boolean = get(key) is List<*>
+    fun getList(key: String): List<*>? = getList(key, null)
+    fun getList(key: String, defaultList: List<*>?): List<*>? = get(key, defaultList)
+    fun isList(key: String): Boolean = get(key) is List<*>
     /** StringList */
-    fun getStringList(key: String?): MutableList<String> {
-        val value = this.getList(key) ?: return ArrayList(0)
+    fun getStringList(key: String): MutableList<String> {
+        val value = getList(key) ?: return ArrayList(0)
         val result: MutableList<String> = ArrayList()
         for (o in value) {
             if (o is String || o is Number || o is Boolean || o is Char)
@@ -340,7 +419,7 @@ class ConfigSection : LinkedHashMap<String, Any?> {
         return result
     }
     /** IntegerList */
-    fun getIntegerList(key: String?): MutableList<Int> {
+    fun getIntegerList(key: String): MutableList<Int> {
         val list = getList(key) ?: return ArrayList(0)
         val result: MutableList<Int> = ArrayList()
         for (o in list) {
@@ -360,7 +439,7 @@ class ConfigSection : LinkedHashMap<String, Any?> {
         return result
     }
     /** BooleanList */
-    fun getBooleanList(key: String?): MutableList<Boolean> {
+    fun getBooleanList(key: String): MutableList<Boolean> {
         val list = getList(key) ?: return ArrayList(0)
         val result: MutableList<Boolean> = ArrayList()
         for (o in list) {
@@ -375,7 +454,7 @@ class ConfigSection : LinkedHashMap<String, Any?> {
         return result
     }
     /** DoubleList */
-    fun getDoubleList(key: String?): MutableList<Double> {
+    fun getDoubleList(key: String): MutableList<Double> {
         val list = getList(key) ?: return ArrayList(0)
         val result: MutableList<Double> = ArrayList()
         for (o in list) {
@@ -395,7 +474,7 @@ class ConfigSection : LinkedHashMap<String, Any?> {
         return result
     }
     /** FloatList */
-    fun getFloatList(key: String?): MutableList<Float> {
+    fun getFloatList(key: String): MutableList<Float> {
         val list = getList(key) ?: return ArrayList(0)
         val result: MutableList<Float> = ArrayList()
         for (o in list) {
@@ -415,7 +494,7 @@ class ConfigSection : LinkedHashMap<String, Any?> {
         return result
     }
     /** LongList */
-    fun getLongList(key: String?): MutableList<Long> {
+    fun getLongList(key: String): MutableList<Long> {
         val list = getList(key) ?: return ArrayList(0)
         val result: MutableList<Long> = ArrayList()
         for (o in list) {
@@ -435,7 +514,7 @@ class ConfigSection : LinkedHashMap<String, Any?> {
         return result
     }
     /** ShortList */
-    fun getShortList(key: String?): MutableList<Short> {
+    fun getShortList(key: String): MutableList<Short> {
         val list = getList(key) ?: return ArrayList(0)
         val result: MutableList<Short> = ArrayList()
         for (o in list) {
@@ -455,7 +534,7 @@ class ConfigSection : LinkedHashMap<String, Any?> {
         return result
     }
     /** ByteList */
-    fun getByteList(key: String?): MutableList<Byte> {
+    fun getByteList(key: String): MutableList<Byte> {
         val list = getList(key) ?: return ArrayList(0)
         val result: MutableList<Byte> = ArrayList()
         for (o in list) {
@@ -475,7 +554,7 @@ class ConfigSection : LinkedHashMap<String, Any?> {
         return result
     }
     /** CharacterList */
-    fun getCharacterList(key: String?): MutableList<Char> {
+    fun getCharacterList(key: String): MutableList<Char> {
         val list = getList(key) ?: return ArrayList(0)
         val result: MutableList<Char> = ArrayList()
         for (o in list) {
@@ -492,23 +571,12 @@ class ConfigSection : LinkedHashMap<String, Any?> {
     }
     /** MapList */
     @Suppress("UNCHECKED_CAST")
-    fun getMapList(key: String?): MutableList<Map<*, *>> {
+    fun getMapList(key: String): MutableList<Map<*, *>> {
         val result: MutableList<Map<*, *>> = ArrayList()
         val list: List<Map<*, *>> = getList(key) as List<Map<*, *>>
         for (o in list)
             result.add(o)
         return result
-    }
-
-    fun remove(key: String?) {
-        if (key == null || key.isEmpty()) return
-        if (super.containsKey(key)) super.remove(key) else if (this.containsKey(".")) {
-            val keys = key.split("\\.", limit = 2).toTypedArray()
-            if (super.get(keys[0]) is ConfigSection) {
-                val section = super.get(keys[0]) as ConfigSection?
-                section!!.remove(keys[1])
-            }
-        }
     }
 
     fun exists(key: String): Boolean = exists(key, false)
@@ -539,4 +607,16 @@ class ConfigSection : LinkedHashMap<String, Any?> {
     }
 
     inline fun <reified T> type(value: Any?): Boolean = value is T
+
+    @Suppress("UNCHECKED_CAST")
+    private fun parseList(list: List<*>): List<*>? {
+        val newList: MutableList<Any?> = ArrayList()
+        for (o in list) {
+            if (o is LinkedHashMap<*, *>)
+                newList.add(ConfigSection(o as Map<String, Any?>))
+            else
+                newList.add(o)
+        }
+        return newList
+    }
 }

@@ -21,11 +21,7 @@ class CommandLine(val commandLine: String?) {
         }
     }
 
-    fun getName(): String? {
-        return filterCommandToname(commandLine)
-    }
+    fun getName(): String? = filterCommandToname(commandLine)
 
-    fun getArgs(): List<String> {
-        return filterCommandToargs(commandLine)
-    }
+    fun getArgs(): List<String> = filterCommandToargs(commandLine)
 }
