@@ -40,8 +40,6 @@ class CommandLine(private var commandLine: String) {
 
     fun format(): String = toString()
 
-    fun toCommandLine(): CommandLine = CommandLine(format())
-
     override fun toString(): String {
         val name = getName() ?: return ""
         val s: StringBuilder = StringBuilder()
