@@ -1,8 +1,8 @@
 package gopurk.command
 
-import gopurk.command.default.HelpCommand
-import java.lang.Exception
+import java.util.*
 import java.util.function.Predicate
+import kotlin.collections.LinkedHashMap
 
 class SimpleCommandMap() : CommandMap {
     private val commands: MutableMap<String, Command> = LinkedHashMap()
@@ -54,4 +54,22 @@ class SimpleCommandMap() : CommandMap {
     }
 
     fun getCommands(): Map<String, Command> = commands
+
+    fun getAllCommandName(): LinkedList<String> {
+        val list: LinkedList<String> = LinkedList()
+        commands.values.forEach {command -> list.add(command.getName()) }
+        return list
+    }
+
+    fun getAllCommandDescriptions(): LinkedList<String> {
+        val list: LinkedList<String> = LinkedList()
+        commands.values.forEach {command -> list.add(command.getDescription()) }
+        return list
+    }
+
+    fun getAllCommandUsages(): LinkedList<String> {
+        val list: LinkedList<String> = LinkedList()
+        commands.values.forEach {command -> list.add(command.getUsage()) }
+        return list
+    }
 }
