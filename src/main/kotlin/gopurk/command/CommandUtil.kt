@@ -17,8 +17,17 @@ class CommandLine(private var commandLine: String) {
             if (commandLine == null || commandLine.isEmpty())
                 return listOf()
             val commandLine1 = commandLine.trim()
-            if (commandLine1.contains(" "))
-                return commandLine1.substring(commandLine1.indexOf(" ") + 1, commandLine1.length).split(" ")
+            if (commandLine1.contains(" ".toRegex())) {
+                val s = commandLine1.trim().substring(commandLine1.indexOf(" "), commandLine1.length)
+                if (s.contains(" ".toRegex())) {
+                    val m: MutableList<String> = mutableListOf()
+                    s.split(" ").forEach { a ->
+                        if (a.trim().isNotEmpty())
+                            m.add(a)
+                    }
+                    return m
+                }
+            }
             return listOf()
         }
     }
@@ -29,15 +38,17 @@ class CommandLine(private var commandLine: String) {
 
     fun getCommandLine(): String = commandLine
 
-    fun parseCommandLine(): String = toString()
+    fun format(): String = toString()
 
-    fun toCommandLine(): CommandLine = CommandLine(parseCommandLine())
+    fun toCommandLine(): CommandLine = CommandLine(format())
 
     override fun toString(): String {
         val name = getName() ?: return ""
         val s: StringBuilder = StringBuilder()
         s.append(name)
         val args: List<String> = getArgs()
+        if (args.isNotEmpty())
+            s.append(" ")
         for (ss in args.indices) {
             s.append(args[ss])
             if (ss + 1 < args.size)
