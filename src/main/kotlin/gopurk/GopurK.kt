@@ -10,9 +10,7 @@ fun main(args: Array<String>) {
 
 class GopurK {
     val information: Information = Information()
-    private val commandMap: SimpleCommandMap = SimpleCommandMap()
-
-    fun getCommandMap(): SimpleCommandMap = commandMap
+    val commandMap: SimpleCommandMap = SimpleCommandMap()
 
     class Information {
         val version: String = "0.0.1"
@@ -38,8 +36,20 @@ class GopurKTool {
         class StringSort {
             /**
              * 键与值的行列排序算法
+             * @param map Map
+             * @param line 排序行数
+             * @param format 格式
+             * @param useTab 是否\t
              */
             fun keyValueLine(map: Map<String, String>, line: Int = 2, format: String = "{key} - {value}", useTab: Boolean = true): String = keyValueLine(map.keys.toList(), map.values.toList(), line, format, useTab)
+            /**
+             * 键与值的行列排序算法
+             * @param keys 所有键
+             * @param values 所有值
+             * @param line 排序行数
+             * @param format 格式
+             * @param useTab 是否\t
+             */
             fun keyValueLine(keys: List<String>, values: List<String>, line: Int = 2, format: String = "{key} - {value}", useTab: Boolean = true): String {
                 if (keys.size != values.size)
                     return ""
