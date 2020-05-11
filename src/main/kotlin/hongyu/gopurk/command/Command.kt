@@ -1,9 +1,9 @@
-package gopurk.command
+package hongyu.gopurk.command
 
 abstract class Command {
-    private lateinit var name: String
-    private lateinit var description: String
-    private lateinit var usage: String
+    private var name: String
+    private var description: String
+    private var usage: String
     private var commandMap: CommandMap? = null
 
     constructor(name: String, description: String, usage: String) {

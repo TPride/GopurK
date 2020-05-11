@@ -1,4 +1,4 @@
-package gopurk.command
+package hongyu.gopurk.command
 
 import java.lang.StringBuilder
 

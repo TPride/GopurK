@@ -1,23 +1,7 @@
-package gopurk
+package hongyu.gopurk
 
-import gopurk.command.SimpleCommandMap
+import java.lang.StringBuilder
 import java.util.regex.Pattern
-
-val gopurK: GopurK = GopurK()
-fun main(args: Array<String>) {
-
-}
-
-class GopurK {
-    val information: Information = Information()
-    val commandMap: SimpleCommandMap = SimpleCommandMap()
-
-    class Information {
-        val version: String = "0.0.1"
-        val authors: List<String> = listOf("TPride")
-        val path: String = System.getProperty("user.dir")
-    }
-}
 
 class GopurKTool {
     companion object {
@@ -41,7 +25,10 @@ class GopurKTool {
              * @param format 格式
              * @param useTab 是否\t
              */
-            fun keyValueLine(map: Map<String, String>, line: Int = 2, format: String = "{key} - {value}", useTab: Boolean = true): String = keyValueLine(map.keys.toList(), map.values.toList(), line, format, useTab)
+            fun keyValueLine(map: Map<String, String>, line: Int = 2, format: String = "{key} - {value}", useTab: Boolean = true): String {
+                val keyValueLine = keyValueLine(map.keys.toList(), map.values.toList(), line, format, useTab)
+                return keyValueLine
+            }
             /**
              * 键与值的行列排序算法
              * @param keys 所有键

@@ -1,4 +1,4 @@
-package gopurk.command
+package hongyu.gopurk.command
 
 interface CommandMap {
     fun register(command: Command): Boolean

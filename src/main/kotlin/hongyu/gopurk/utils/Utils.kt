@@ -1,5 +1,9 @@
-package gopurk.utils
+package hongyu.gopurk.utils
 
+import net.lingala.zip4j.core.ZipFile
+import net.lingala.zip4j.exception.ZipException
+import net.lingala.zip4j.model.ZipParameters
+import net.lingala.zip4j.util.Zip4jConstants
 import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.Yaml
 import java.io.*
@@ -591,8 +595,8 @@ class ConfigSection : LinkedHashMap<String, Any?> {
     }
 
     fun exists(key: String): Boolean = exists(key, false)
-    fun exists(key: String, ignoreCase: Boolean): Boolean {
-        var key = key
+    fun exists(key1: String, ignoreCase: Boolean): Boolean {
+        var key = key1
         if (ignoreCase)
             key = key.toLowerCase()
         for (existKey in getKeys(true)) {
@@ -622,12 +626,112 @@ class ConfigSection : LinkedHashMap<String, Any?> {
     @Suppress("UNCHECKED_CAST")
     private fun parseList(list: List<*>): List<*>? {
         val newList: MutableList<Any?> = ArrayList()
-        for (o in list) {
-            if (o is LinkedHashMap<*, *>)
-                newList.add(ConfigSection(o as Map<String, Any?>))
-            else
-                newList.add(o)
-        }
+        for (o in list)
+            newList.add(if (o is LinkedHashMap<*, *>) ConfigSection(o as Map<String, Any?>) else o)
         return newList
+    }
+}
+
+class Zip {
+    companion object {
+        fun isZip(file: File): Boolean {
+            if (!file.exists() || file.isDirectory || file.isFile && !file.name.contains(".")) return false
+            return if (file.name.contains(".")) file.name
+                .substring(file.name.lastIndexOf(".") + 1, file.name.length) == "zip" else false
+        }
+
+        fun isValidZip(file: File?): Boolean {
+            return try {
+                ZipFile(file).isValidZipFile
+            } catch (e: ZipException) {
+                false
+            }
+        }
+
+        fun isEncrypted(filePath: String?): Boolean {
+            return try {
+                val file = File(filePath!!)
+                if (!file.exists() || file.isDirectory) return false
+                val zipFile = ZipFile(file)
+                if (zipFile.isValidZipFile) zipFile.isEncrypted else false
+            } catch (e: ZipException) {
+                false
+            }
+        }
+
+        fun enzip(srcFile: String?, dest: String, password: String?): Boolean {
+            return try {
+                val srcfile = File(srcFile!!)
+                val destname = destFileName(srcfile, dest)
+                val par = ZipParameters()
+                par.compressionMethod = Zip4jConstants.COMP_DEFLATE
+                par.compressionLevel = Zip4jConstants.DEFLATE_LEVEL_NORMAL
+                val zipfile = ZipFile(destname)
+                zipfile.setFileNameCharset("UTF-8")
+                if (password != null) {
+                    par.isEncryptFiles = true
+                    par.encryptionMethod = Zip4jConstants.ENC_METHOD_STANDARD
+                    par.setPassword(password)
+                }
+                if (srcfile.isDirectory) zipfile.addFolder(srcfile, par) else zipfile.addFile(srcfile, par)
+                true
+            } catch (e: ZipException) {
+                false
+            }
+        }
+
+        fun unzip(zipFile: String?, destino: String?, password: String?): Boolean {
+            return try {
+                val file = File(zipFile!!)
+                if (!file.exists() || file.isDirectory)
+                    return false
+                val zFile = ZipFile(zipFile)
+                zFile.setFileNameCharset("UTF-8")
+                if (!zFile.isValidZipFile)
+                    return false
+                if (File(destino!!).isFile)
+                    return false
+                if (zFile.isEncrypted) {
+                    if (password == null)
+                        return false
+                    zFile.setPassword(password)
+                }
+                zFile.extractAll(destino)
+                true
+            } catch (e: ZipException) {
+                false
+            }
+        }
+
+        private fun destFileName(srcFile: File, destino1: String?): String {
+            var destino: String? = destino1
+            if (destino == null) {
+                destino = if (!srcFile.isDirectory) {
+                    val filename = srcFile.name.substring(0, srcFile.name.lastIndexOf("."))
+                    srcFile.parent + File.separator + filename + ".zip"
+                } else srcFile.parent + File.separator + srcFile.name + ".zip"
+            } else {
+                paths(destino)
+                if (destino.endsWith(File.separator)) {
+                    val filename: String = if (srcFile.isDirectory) srcFile.name else srcFile.name.substring(
+                        0,
+                        srcFile.name.lastIndexOf(".")
+                    )
+                    destino += "$filename.zip"
+                }
+            }
+            return destino
+        }
+
+        private fun paths(dest: String) {
+            val destDir: File = if (dest.endsWith(File.separator)) File(dest) else File(
+                dest.substring(
+                    0,
+                    dest.lastIndexOf(File.separator)
+                )
+            )
+            if (!destDir.exists())
+                destDir.mkdirs()
+        }
     }
 }
