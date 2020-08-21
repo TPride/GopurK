@@ -15,14 +15,14 @@ import kotlin.collections.LinkedHashMap
 class Utils {
     companion object {
         @Throws(IOException::class)
-        fun readFile(file: File): String? {
+        fun readFile(file: File): String {
             if (!file.exists() || file.isDirectory)
                 throw FileNotFoundException()
             return readFile(FileInputStream(file))
         }
 
         @Throws(IOException::class)
-        fun readFile(filename: String): String? {
+        fun readFile(filename: String): String {
             val file = File(filename)
             if (!file.exists() || file.isDirectory)
                 throw FileNotFoundException()
@@ -30,10 +30,10 @@ class Utils {
         }
 
         @Throws(IOException::class)
-        fun readFile(inputStream: InputStream): String? = readFile(InputStreamReader(inputStream, StandardCharsets.UTF_8))
+        fun readFile(inputStream: InputStream): String = readFile(InputStreamReader(inputStream, StandardCharsets.UTF_8))
 
         @Throws(IOException::class)
-        private fun readFile(reader: Reader): String? {
+        private fun readFile(reader: Reader): String {
             BufferedReader(reader).use { br ->
                 val stringBuilder = StringBuilder()
                 var temp: String?
@@ -708,15 +708,13 @@ class Zip {
             if (destino == null) {
                 destino = if (!srcFile.isDirectory) {
                     val filename = srcFile.name.substring(0, srcFile.name.lastIndexOf("."))
-                    srcFile.parent + File.separator + filename + ".zip"
-                } else srcFile.parent + File.separator + srcFile.name + ".zip"
+                    "${srcFile.parent}${File.separator}$filename.zip"
+                } else
+                    "${srcFile.parent}${File.separator}${srcFile.name}.zip"
             } else {
                 paths(destino)
                 if (destino.endsWith(File.separator)) {
-                    val filename: String = if (srcFile.isDirectory) srcFile.name else srcFile.name.substring(
-                        0,
-                        srcFile.name.lastIndexOf(".")
-                    )
+                    val filename: String = if (srcFile.isDirectory) srcFile.name else srcFile.name.substring(0, srcFile.name.lastIndexOf("."))
                     destino += "$filename.zip"
                 }
             }
@@ -724,12 +722,7 @@ class Zip {
         }
 
         private fun paths(dest: String) {
-            val destDir: File = if (dest.endsWith(File.separator)) File(dest) else File(
-                dest.substring(
-                    0,
-                    dest.lastIndexOf(File.separator)
-                )
-            )
+            val destDir: File = if (dest.endsWith(File.separator)) File(dest) else File(dest.substring(0, dest.lastIndexOf(File.separator)))
             if (!destDir.exists())
                 destDir.mkdirs()
         }

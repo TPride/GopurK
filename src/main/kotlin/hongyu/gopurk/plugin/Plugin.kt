@@ -1,5 +1,6 @@
 package hongyu.gopurk.plugin
 
+import hongyu.gopurk.plugin.loaders.PluginLoader
 import hongyu.gopurk.utils.PluginLogger
 import java.io.File
 

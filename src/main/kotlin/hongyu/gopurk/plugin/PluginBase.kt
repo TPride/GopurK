@@ -1,5 +1,6 @@
 package hongyu.gopurk.plugin
 
+import hongyu.gopurk.plugin.loaders.PluginLoader
 import hongyu.gopurk.utils.PluginLogger
 import java.io.File
 
@@ -12,11 +13,11 @@ class PluginBase : Plugin {
     private lateinit var pluginLogger: PluginLogger
 
 
-    override fun onLoad(): Unit {}
+    override fun onLoad() {}
 
-    override fun onEnable(): Unit {}
+    override fun onEnable() {}
 
-    override fun onDisable(): Unit {}
+    override fun onDisable() {}
 
     override fun isDisabled(): Boolean = !isEnabled
 
